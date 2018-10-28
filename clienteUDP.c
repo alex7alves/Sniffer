@@ -1,4 +1,11 @@
 
+/*
+	Programa para enviar mensagens via socket UDP
+
+	Autor : Alex Alves.
+*/
+
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <stdio.h>
@@ -9,11 +16,17 @@
 #include <string.h>
 #include <time.h>
 
-struct dado {
-        int idade;
-        char nome[40];
- };
+struct tipo_1 {
+    char tipo;
+    char matricula[8];
+    char tamanho[2];
+    char nome[40];
+};
 
+struct tipo_2 {
+    char tipo;
+    char matricula[8];
+};
 
 int main( )
 {
@@ -25,10 +38,20 @@ int main( )
 
     
 
-    struct dado pessoa;
+    struct tipo_1 mensagem;
+    struct tipo_2 mensagem2;
 
-    pessoa.idade=20;
-    strcpy(pessoa.nome, "Jose Silva");
+    // Preenchendo mensagem do tipo 1
+    //strcpy(mensagem.tipo, "1");
+    mensagem.tipo = '1';
+    strcpy(mensagem.matricula, "12345678");
+    strcpy(mensagem.tamanho, "10");
+    strcpy(mensagem.nome, " Alan Ribeiro");
+
+    // preenchendo mensagem do tipo 2
+   // strcpy(mensagem2.tipo, "2");
+    mensagem2.tipo = '2';
+    strcpy(mensagem2.matricula, "90345612");
 
     unsigned short porta = 1234;
     
@@ -42,10 +65,11 @@ int main( )
     
     len = sizeof(address);
     printf("O cliente8 vai começar a enviar os dados \n");
-    for(int i=0;i<10;i++)
+    for(int i=0;i<4;i++)
     {
         printf("Enviando %d \n", i);
-        sendto(sockfd, &pessoa,sizeof(pessoa),0,(struct sockaddr *) &address, len);
+        sendto(sockfd, &mensagem,sizeof(mensagem),0,(struct sockaddr *) &address, len);
+        sendto(sockfd, &mensagem2,sizeof(mensagem2),0,(struct sockaddr *) &address, len);
         sleep(1);
     }
     close(sockfd);

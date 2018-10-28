@@ -24,7 +24,12 @@ void Pacote_tcp(unsigned char*  Buffer, int Tamanho);
 void Pacote_udp(unsigned char* Buffer , int Tamanho);
 void Processar(unsigned char* Buffer , int Tamanho , int Tipo ,int *num_tcp, int *num_udp);
 
-
+struct dado {
+    char tipo;
+    char matricula[8];
+    char tamanho[2];
+    char nome[40];
+ };
 
 FILE *logfile;
 struct sockaddr_in source,dest;
@@ -47,17 +52,18 @@ int main(int argc, char** argv)
     logfile=fopen("log.txt","w");
     if(logfile==NULL) printf("Erro ao abrir o arquivo.");
     printf("Iniciando captura...\n");
-     if (argc != 2) {
+    if (argc != 2) {
         tipo=0;
-     }else {
+    }else {
         tipo = atoi(argv[1]);
-     }
+    }
 	sock_raw = Criar_socket(tipo);
     
 	Verificar("Erro ao criar o RAW Socket",sock_raw);
    
     while(1)
     {
+
         tamanho_endereco = sizeof(endereco);
         //Recebendo pacotes
         tamanho_mensagem = recvfrom(sock_raw , buffer ,65536 , 0 , &endereco , &tamanho_endereco);
@@ -87,7 +93,7 @@ void AlocarBuffer(unsigned char  **Buffer, int t)
 void  Verificar(char* mensagem, int valor)
 {
 	if ( valor < 0 ){
-    
+
         printf("%s %d\n",mensagem, valor);
 		exit(1);
     }
@@ -142,22 +148,34 @@ void Pacote_udp(unsigned char* Buffer , int Tamanho)
 {
      
     unsigned short iphdrlen;
-     
+    struct dado *p;
+
     struct iphdr *iph = (struct iphdr *)Buffer;
     iphdrlen = iph->ihl*4;
      
     struct udphdr *udph = (struct udphdr*)(Buffer + iphdrlen);
-    //struct pacote *p = (struct pacote)(Buffer + iphdrlen + sizeof(struct tcphdr ));
+    p = (struct dado*)(Buffer + iphdrlen + sizeof(struct udphdr ));
      
     fprintf(logfile,"\n\n------------------ Pacote UDP ------------------  \n");
      
     Capturar_ip(Buffer,Tamanho);          
      
     fprintf(logfile,"\nUDP Header\n");
-    fprintf(logfile,"   - Porta de origem      : %d\n" , ntohs(udph->source));
+    fprintf(logfile,"   - Porta de origem      : %c\n" , ntohs(udph->source));
     fprintf(logfile,"   - Porta de destino : %d\n" , ntohs(udph->dest));
     fprintf(logfile,"   - UDP Length       : %d\n" , ntohs(udph->len));
     fprintf(logfile,"   - UDP Checksum     : %d\n" , ntohs(udph->check));
+       
+    fprintf(logfile,"\n **************************************************** ");
+
+
+
+
+    fprintf(logfile,"\n Dados do pacote \n");
+    fprintf(logfile," - Tipo      : %d\n", p->tipo);
+    fprintf(logfile," - Matricula : %s\n", p->matricula);
+    fprintf(logfile," - Tamanho   : %s\n", p->tamanho);
+    fprintf(logfile," - Nome      : %s\n", p->nome);
        
     fprintf(logfile,"\n **************************************************** ");
     
