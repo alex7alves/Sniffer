@@ -24,12 +24,23 @@ void Pacote_tcp(unsigned char*  Buffer, int Tamanho);
 void Pacote_udp(unsigned char* Buffer , int Tamanho);
 void Processar(unsigned char* Buffer , int Tamanho , int Tipo ,int *num_tcp, int *num_udp);
 
+void MostrarIP(int n1, int n2, int n3);
+void MostrarUDP(int n1, int n2, int n3, int n4);
+void MostrarDado(int n1, char* m, char* m2, char* m3);
+void MostrarDado2(int n1, char* m);
+
 struct dado {
     int tipo;
-    char matricula[9];
-    char tamanho[3];
+    char matricula[9]; // 8 bytes + o \0
+    char tamanho[3];  //  2 bytes + \0 
     char nome[41];
- };
+};
+
+struct dado2 {
+    int tipo;
+    char matricula[9];
+};
+
 
 FILE *logfile;
 struct sockaddr_in source,dest;
@@ -141,6 +152,19 @@ void Capturar_ip(unsigned char*  Buffer, int Tamanho)
     fprintf(logfile,"   - Checksum : %d\n",ntohs(iph->check));
     fprintf(logfile,"   - IP de origem        : %s\n",inet_ntoa(source.sin_addr));
     fprintf(logfile,"   - IP de destinho   : %s\n",inet_ntoa(dest.sin_addr));
+
+
+
+    printf("\n");
+    printf("IP Header\n");
+    printf("   - Versao do IP          : %d\n",(unsigned int)iph->version);
+    printf("  - Tipo de servico  : %d\n",(unsigned int)iph->tos);
+    printf("   - IP Tamanho total   : %d  Bytes(Tamanho do pacote)\n",ntohs(iph->tot_len));
+    printf("   - Identificacao    : %d\n",ntohs(iph->id));
+    printf("   - Protocolo : %d\n",(unsigned int)iph->protocol);
+    printf("   - Checksum : %d\n",ntohs(iph->check));
+    printf("   - IP de origem        : %s\n",inet_ntoa(source.sin_addr));
+    printf("   - IP de destinho   : %s\n",inet_ntoa(dest.sin_addr));
     
 }
 
@@ -155,10 +179,29 @@ void Pacote_udp(unsigned char* Buffer , int Tamanho)
     //struct udphdr *udph = (struct udphdr*)(Buffer + iphdrlen);
     //struct dado *p = (struct dado*)(Buffer + iphdrlen + sizeof(struct udphdr ));
     struct udphdr *udph = (struct udphdr*)(Buffer + 20);
-    struct dado *p = (struct dado*)(Buffer +28);
+
+    int *t = (int*)(Buffer +28);
+
+    if (*t==1){
+        struct dado *p = (struct dado*)(Buffer +28);
+
+        Capturar_ip(Buffer,Tamanho);  
+        MostrarUDP(ntohs(udph->source),ntohs(udph->dest),ntohs(udph->len),ntohs(udph->check));
+        MostrarDado(p->tipo,p->matricula,p->tamanho,p->nome);
+
+
+    }else if (*t==2){
+        struct dado2 *p = (struct dado2*)(Buffer +28);
+
+        Capturar_ip(Buffer,Tamanho);  
+        MostrarUDP(ntohs(udph->source),ntohs(udph->dest),ntohs(udph->len),ntohs(udph->check));
+        MostrarDado2(p->tipo,p->matricula);
+   
+    }
+   // struct dado *p = (struct dado*)(Buffer +28);
     fprintf(logfile,"\n------------------ Pacote UDP ------------------  \n");
      
-    Capturar_ip(Buffer,Tamanho);          
+   // Capturar_ip(Buffer,Tamanho);          
      
     fprintf(logfile,"\nUDP Header\n");
     fprintf(logfile,"   - Porta de origem      : %d\n" , ntohs(udph->source));
@@ -167,33 +210,6 @@ void Pacote_udp(unsigned char* Buffer , int Tamanho)
     fprintf(logfile,"   - UDP Checksum     : %d\n" , ntohs(udph->check));
        
 
-
-    printf("\nUDP Header\n");
-    printf("   - Porta de origem  : %d\n" , ntohs(udph->source));
-    printf("   - Porta de destino : %d\n" , ntohs(udph->dest));
-    printf("   - UDP Length       : %d\n" , ntohs(udph->len));
-    printf("   - UDP Checksum     : %d\n" , ntohs(udph->check));
-
-
-    fprintf(logfile,"\n **************************************************** ");
-
-
-
-
-    fprintf(logfile,"\n Dados do pacote \n");
-    fprintf(logfile,"  - Tipo      : %d\n", p->tipo);
-    fprintf(logfile,"  - Matricula : %s\n", p->matricula);
-    fprintf(logfile,"  - Tamanho   : %s\n", p->tamanho);
-    fprintf(logfile,"  - Nome      : %s\n", p->nome);
-       
-
-    printf("\n Dados do pacote \n");
-    printf(" - Tipo      : %d\n", p->tipo);
-    printf(" - Matricula : %s\n", p->matricula);
-    printf(" - Tamanho   : %s\n", p->tamanho);
-    printf(" - Nome      : %s\n", p->nome);
-
-    fprintf(logfile,"\n **************************************************** ");
     
 }
 
@@ -256,5 +272,29 @@ void Processar(unsigned char* Buffer , int Tamanho , int Tipo, int *num_tcp, int
     
 }  
 
- 
+void MostrarIP(int n1, int n2, int n3);
+void MostrarUDP(int n1, int n2, int n3, int n4)
+{
+
+    printf("\nUDP Header\n");
+    printf("   - Porta de origem  : %d\n" ,n1);
+    printf("   - Porta de destino : %d\n" ,n2);
+    printf("   - UDP Length       : %d\n" ,n3);
+    printf("   - UDP Checksum     : %d\n" ,n4);
+}
+void MostrarDado(int n1, char* m, char* m2, char* m3)
+{
+    printf("\nDados do pacote \n");
+    printf(" - Tipo      : %d\n",n1);
+    printf(" - Matricula : %s\n",m);
+    printf(" - Tamanho   : %s\n",m2);
+    printf(" - Nome      : %s\n",m3);
+    printf("\n **************************************************** \n ");
+}
+void MostrarDado2(int n1, char* m){
+    printf("\nDados do pacote \n");
+    printf(" - Tipo      : %d\n",n1);
+    printf(" - Matricula : %s\n",m);
+    printf("\n **************************************************** \n ");
+}
 
