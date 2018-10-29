@@ -24,8 +24,8 @@ struct tipo_1 {
 };
 
 struct tipo_2 {
-    char tipo;
-    char matricula[8];
+    int tipo;
+    char matricula[9];
 };
 
 int main( )
@@ -55,7 +55,7 @@ printf(" tamanho %s\n",mensagem.tamanho);
 printf(" nome %s\n",mensagem.nome);
     // preenchendo mensagem do tipo 2
    // strcpy(mensagem2.tipo, "2");
-    mensagem2.tipo = '2';
+    mensagem2.tipo =2;
     strcpy(mensagem2.matricula, "90345612");
 
     unsigned short porta = 1234;
@@ -74,7 +74,7 @@ printf(" nome %s\n",mensagem.nome);
     {
         printf("Enviando %d \n", i);
         sendto(sockfd, &mensagem,sizeof(mensagem),0,(struct sockaddr *) &address, len);
-       // sendto(sockfd, &mensagem2,sizeof(mensagem2),0,(struct sockaddr *) &address, len);
+        sendto(sockfd, &mensagem2,sizeof(mensagem2),0,(struct sockaddr *) &address, len);
         sleep(1);
     }
     close(sockfd);
