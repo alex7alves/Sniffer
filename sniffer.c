@@ -25,10 +25,10 @@ void Pacote_udp(unsigned char* Buffer , int Tamanho);
 void Processar(unsigned char* Buffer , int Tamanho , int Tipo ,int *num_tcp, int *num_udp);
 
 struct dado {
-    char tipo;
-    char matricula[8];
-    char tamanho[2];
-    char nome[40];
+    int tipo;
+    char matricula[9];
+    char tamanho[3];
+    char nome[41];
  };
 
 FILE *logfile;
@@ -148,35 +148,51 @@ void Pacote_udp(unsigned char* Buffer , int Tamanho)
 {
      
     unsigned short iphdrlen;
-    struct dado *p;
 
     struct iphdr *iph = (struct iphdr *)Buffer;
     iphdrlen = iph->ihl*4;
      
-    struct udphdr *udph = (struct udphdr*)(Buffer + iphdrlen);
-    p = (struct dado*)(Buffer + iphdrlen + sizeof(struct udphdr ));
-     
-    fprintf(logfile,"\n\n------------------ Pacote UDP ------------------  \n");
+    //struct udphdr *udph = (struct udphdr*)(Buffer + iphdrlen);
+    //struct dado *p = (struct dado*)(Buffer + iphdrlen + sizeof(struct udphdr ));
+    struct udphdr *udph = (struct udphdr*)(Buffer + 20);
+    struct dado *p = (struct dado*)(Buffer +28);
+    fprintf(logfile,"\n------------------ Pacote UDP ------------------  \n");
      
     Capturar_ip(Buffer,Tamanho);          
      
     fprintf(logfile,"\nUDP Header\n");
-    fprintf(logfile,"   - Porta de origem      : %c\n" , ntohs(udph->source));
+    fprintf(logfile,"   - Porta de origem      : %d\n" , ntohs(udph->source));
     fprintf(logfile,"   - Porta de destino : %d\n" , ntohs(udph->dest));
     fprintf(logfile,"   - UDP Length       : %d\n" , ntohs(udph->len));
     fprintf(logfile,"   - UDP Checksum     : %d\n" , ntohs(udph->check));
        
+
+
+    printf("\nUDP Header\n");
+    printf("   - Porta de origem  : %d\n" , ntohs(udph->source));
+    printf("   - Porta de destino : %d\n" , ntohs(udph->dest));
+    printf("   - UDP Length       : %d\n" , ntohs(udph->len));
+    printf("   - UDP Checksum     : %d\n" , ntohs(udph->check));
+
+
     fprintf(logfile,"\n **************************************************** ");
 
 
 
 
     fprintf(logfile,"\n Dados do pacote \n");
-    fprintf(logfile," - Tipo      : %d\n", p->tipo);
-    fprintf(logfile," - Matricula : %s\n", p->matricula);
-    fprintf(logfile," - Tamanho   : %s\n", p->tamanho);
-    fprintf(logfile," - Nome      : %s\n", p->nome);
+    fprintf(logfile,"  - Tipo      : %d\n", p->tipo);
+    fprintf(logfile,"  - Matricula : %s\n", p->matricula);
+    fprintf(logfile,"  - Tamanho   : %s\n", p->tamanho);
+    fprintf(logfile,"  - Nome      : %s\n", p->nome);
        
+
+    printf("\n Dados do pacote \n");
+    printf(" - Tipo      : %d\n", p->tipo);
+    printf(" - Matricula : %s\n", p->matricula);
+    printf(" - Tamanho   : %s\n", p->tamanho);
+    printf(" - Nome      : %s\n", p->nome);
+
     fprintf(logfile,"\n **************************************************** ");
     
 }

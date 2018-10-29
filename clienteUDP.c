@@ -17,10 +17,10 @@
 #include <time.h>
 
 struct tipo_1 {
-    char tipo;
-    char matricula[8];
-    char tamanho[2];
-    char nome[40];
+    int tipo;
+    char matricula[9];
+    char tamanho[3];
+    char nome[41];
 };
 
 struct tipo_2 {
@@ -43,11 +43,16 @@ int main( )
 
     // Preenchendo mensagem do tipo 1
     //strcpy(mensagem.tipo, "1");
-    mensagem.tipo = '1';
+    mensagem.tipo = 1;
+    printf(" mensagem tipo %d\n",mensagem.tipo);
     strcpy(mensagem.matricula, "12345678");
     strcpy(mensagem.tamanho, "10");
     strcpy(mensagem.nome, " Alan Ribeiro");
 
+
+printf(" matricula %s\n",mensagem.matricula);
+printf(" tamanho %s\n",mensagem.tamanho);
+printf(" nome %s\n",mensagem.nome);
     // preenchendo mensagem do tipo 2
    // strcpy(mensagem2.tipo, "2");
     mensagem2.tipo = '2';
@@ -69,7 +74,7 @@ int main( )
     {
         printf("Enviando %d \n", i);
         sendto(sockfd, &mensagem,sizeof(mensagem),0,(struct sockaddr *) &address, len);
-        sendto(sockfd, &mensagem2,sizeof(mensagem2),0,(struct sockaddr *) &address, len);
+       // sendto(sockfd, &mensagem2,sizeof(mensagem2),0,(struct sockaddr *) &address, len);
         sleep(1);
     }
     close(sockfd);
