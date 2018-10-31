@@ -3,6 +3,14 @@
     Programa para capturar pacotes da rede via socket.
 
     Autor : Alex Alves
+
+    para capturar pacotes UDP execute :
+
+    ./sniffer
+
+    Para capturar pacotes tcp execute :
+
+    ./sniffer 1
 */
 
 
@@ -18,7 +26,7 @@
 void AlocarContador(int **cont ); 
 void AlocarBuffer(unsigned char  **Buffer, int t); 
 void Verificar(char* mensagem, int valor);
-int Criar_socket(int tipo); 
+int  Criar_socket(int tipo); 
 void Capturar_ip(unsigned char*  Buffer, int Tamanho);
 void Pacote_tcp(unsigned char*  Buffer, int Tamanho);
 void Pacote_udp(unsigned char* Buffer , int Tamanho);
@@ -26,42 +34,36 @@ void Processar(unsigned char* Buffer , int Tamanho , int Tipo ,int *num_tcp, int
 
 void MostrarIP(int n1, int n2, int n3);
 void MostrarUDP(int n1, int n2, int n3, int n4);
-void MostrarDado(int n1, char* m, char* m2, char* m3);
-void MostrarDado2(int n1, char* m);
+void MostrarDado(char n1, char* m, char* m2, char* m3);
+void MostrarDado2(char n1, char* m);
 
 struct dado {
-    int tipo;
-    char matricula[9]; // 8 bytes + o \0
-    char tamanho[3];  //  2 bytes + \0 
-    char nome[41];
+    char tipo;
+    char matricula[8]; 
+    char tamanho[2];   
+    char nome[50];
 };
 
 struct dado2 {
-    int tipo;
-    char matricula[9];
+    char tipo;
+    char matricula[8];
 };
 
 
-FILE *logfile;
-struct sockaddr_in source,dest;
 int main(int argc, char** argv)
 {
     int sock_raw, tamanho_endereco ,tamanho_mensagem,tipo;
-
     
 	int *num_tcp,*num_udp;
-	unsigned char *buffer = (unsigned char *)malloc(65536); //Its Big!
+	unsigned char *buffer = (unsigned char *)malloc(65536); 
 	struct sockaddr endereco;
     struct in_addr in;
-	//int tamanho_buffer=25536;
-	//AlocarBuffer(&buffer,tamanho_buffer);
+
 	AlocarContador(&num_tcp);
 	AlocarContador(&num_udp);
     *num_tcp=0;
     *num_udp=0;
 
-    logfile=fopen("log.txt","w");
-    if(logfile==NULL) printf("Erro ao abrir o arquivo.");
     printf("Iniciando captura...\n");
     if (argc != 2) {
         tipo=0;
@@ -131,130 +133,82 @@ int Criar_socket(int tipo)
 
 void Capturar_ip(unsigned char*  Buffer, int Tamanho)
 {
-    unsigned short iphdrlen;
-         
-    struct iphdr *iph = (struct iphdr *)Buffer;
-    iphdrlen =iph->ihl*4;
+    struct sockaddr_in source,dest;  
+    struct iphdr *ip = (struct iphdr *)Buffer;
      
     memset(&source, 0, sizeof(source));
-    source.sin_addr.s_addr = iph->saddr;
+    source.sin_addr.s_addr = ip->saddr;
      
     memset(&dest, 0, sizeof(dest));
-    dest.sin_addr.s_addr = iph->daddr;
+    dest.sin_addr.s_addr = ip->daddr;
     
-    fprintf(logfile,"\n");
-    fprintf(logfile,"IP Header\n");
-    fprintf(logfile,"   - Versao do IP          : %d\n",(unsigned int)iph->version);
-    fprintf(logfile,"   - Tipo de servico  : %d\n",(unsigned int)iph->tos);
-    fprintf(logfile,"   - IP Tamanho total   : %d  Bytes(Tamanho do pacote)\n",ntohs(iph->tot_len));
-    fprintf(logfile,"   - Identificacao    : %d\n",ntohs(iph->id));
-    fprintf(logfile,"   - Protocolo : %d\n",(unsigned int)iph->protocol);
-    fprintf(logfile,"   - Checksum : %d\n",ntohs(iph->check));
-    fprintf(logfile,"   - IP de origem        : %s\n",inet_ntoa(source.sin_addr));
-    fprintf(logfile,"   - IP de destinho   : %s\n",inet_ntoa(dest.sin_addr));
-
-
-
     printf("\n");
     printf("IP Header\n");
-    printf("   - Versao do IP          : %d\n",(unsigned int)iph->version);
-    printf("  - Tipo de servico  : %d\n",(unsigned int)iph->tos);
-    printf("   - IP Tamanho total   : %d  Bytes(Tamanho do pacote)\n",ntohs(iph->tot_len));
-    printf("   - Identificacao    : %d\n",ntohs(iph->id));
-    printf("   - Protocolo : %d\n",(unsigned int)iph->protocol);
-    printf("   - Checksum : %d\n",ntohs(iph->check));
-    printf("   - IP de origem        : %s\n",inet_ntoa(source.sin_addr));
-    printf("   - IP de destinho   : %s\n",inet_ntoa(dest.sin_addr));
+    printf("   - Versao do IP          : %d\n",(unsigned int)ip->version);
+    printf("  -  Tipo de servico       : %d\n",(unsigned int)ip->tos);
+    printf("   - IP Tamanho total      : %d\n",ntohs(ip->tot_len));
+    printf("   - Identificacao         : %d\n",ntohs(ip->id));
+    printf("   - Protocolo             : %d\n",(unsigned int)ip->protocol);
+    printf("   - Checksum              : %d\n",ntohs(ip->check));
+    printf("   - IP de origem          : %s\n",inet_ntoa(source.sin_addr));
+    printf("   - IP de destinho        : %s\n",inet_ntoa(dest.sin_addr));
     
 }
 
 void Pacote_udp(unsigned char* Buffer , int Tamanho)
 {
-     
-    unsigned short iphdrlen;
 
-    struct iphdr *iph = (struct iphdr *)Buffer;
-    iphdrlen = iph->ihl*4;
-     
-    //struct udphdr *udph = (struct udphdr*)(Buffer + iphdrlen);
-    //struct dado *p = (struct dado*)(Buffer + iphdrlen + sizeof(struct udphdr ));
-    struct udphdr *udph = (struct udphdr*)(Buffer + 20);
+    struct udphdr *udp = (struct udphdr*)(Buffer + 20);
 
-    int *t = (int*)(Buffer +28);
+    char *t = (char*)(Buffer +28);
 
-    if (*t==1){
+    if (*t=='1'){
         struct dado *p = (struct dado*)(Buffer +28);
 
         Capturar_ip(Buffer,Tamanho);  
-        MostrarUDP(ntohs(udph->source),ntohs(udph->dest),ntohs(udph->len),ntohs(udph->check));
+        MostrarUDP(ntohs(udp->source),ntohs(udp->dest),ntohs(udp->len),ntohs(udp->check));
         MostrarDado(p->tipo,p->matricula,p->tamanho,p->nome);
 
-
-    }else if (*t==2){
+    }else if (*t=='2'){
         struct dado2 *p = (struct dado2*)(Buffer +28);
 
         Capturar_ip(Buffer,Tamanho);  
-        MostrarUDP(ntohs(udph->source),ntohs(udph->dest),ntohs(udph->len),ntohs(udph->check));
+        MostrarUDP(ntohs(udp->source),ntohs(udp->dest),ntohs(udp->len),ntohs(udp->check));
         MostrarDado2(p->tipo,p->matricula);
    
     }
-   // struct dado *p = (struct dado*)(Buffer +28);
-    fprintf(logfile,"\n------------------ Pacote UDP ------------------  \n");
-     
-   // Capturar_ip(Buffer,Tamanho);          
-     
-    fprintf(logfile,"\nUDP Header\n");
-    fprintf(logfile,"   - Porta de origem      : %d\n" , ntohs(udph->source));
-    fprintf(logfile,"   - Porta de destino : %d\n" , ntohs(udph->dest));
-    fprintf(logfile,"   - UDP Length       : %d\n" , ntohs(udph->len));
-    fprintf(logfile,"   - UDP Checksum     : %d\n" , ntohs(udph->check));
-       
-
-    
+   
 }
 
 
 void Pacote_tcp(unsigned char*  Buffer, int Tamanho)
 {
-    unsigned short iphdrlen;
-    
-    struct iphdr *iph = (struct iphdr *)Buffer;
-    iphdrlen = iph->ihl*4;
-     
-    struct tcphdr *tcph=(struct tcphdr*)(Buffer + iphdrlen);
-  //  struct pacote *p = (struct pacote)(Buffer + iphdrlen + sizeof(struct tcphdr ));           
 
-    fprintf(logfile,"\n\n------------------ Pacote TCP ------------------  \n");
-         
+    /*
+        A funcao esta incompleta 
+    */
+
+
+    struct iphdr *ip = (struct iphdr *)Buffer;
+
+    struct tcphdr *tcp=(struct tcphdr*)(Buffer + 20);
+
     Capturar_ip(Buffer,Tamanho);
        
-    fprintf(logfile,"\n");
-    fprintf(logfile,"TCP Header\n");
-    fprintf(logfile,"   - Porta de origem       : %u\n",ntohs(tcph->source));
-    fprintf(logfile,"   - Porta de destino : %u\n",ntohs(tcph->dest));
-    fprintf(logfile,"   - Sequence Number    : %u\n",ntohl(tcph->seq));
-    fprintf(logfile,"   - Acknowledge Number : %u\n",ntohl(tcph->ack_seq));
-    fprintf(logfile,"   - Header Length      : %d DWORDS or %d BYTES\n" ,(unsigned int)tcph->doff,(unsigned int)tcph->doff*4);
-    fprintf(logfile,"   - Urgent Flag          : %d\n",(unsigned int)tcph->urg);
-    fprintf(logfile,"   - Acknowledgement Flag : %d\n",(unsigned int)tcph->ack);
-    fprintf(logfile,"   - Push Flag            : %d\n",(unsigned int)tcph->psh);
-    fprintf(logfile,"   - Reset Flag           : %d\n",(unsigned int)tcph->rst);
-    fprintf(logfile,"   - Synchronise Flag     : %d\n",(unsigned int)tcph->syn);
-    fprintf(logfile,"   - Finish Flag          : %d\n",(unsigned int)tcph->fin);
-    fprintf(logfile,"   - Window         : %d\n",ntohs(tcph->window));
-    fprintf(logfile,"   - Checksum       : %d\n",ntohs(tcph->check));
-    fprintf(logfile,"   - Urgent Pointer : %d\n",tcph->urg_ptr);
-    fprintf(logfile,"\n");
-    fprintf(logfile,"\n **************************************************** ");
-    
+    printf("\n");
+    printf("TCP Header\n");
+    printf("   - Porta de origem       : %d\n",ntohs(tcp->source));
+    printf("   - Porta de destino       : %d\n",ntohs(tcp->dest));
+
+
 }
 
 
 void Processar(unsigned char* Buffer , int Tamanho , int Tipo, int *num_tcp, int *num_udp)
 {
-    struct iphdr *iph = (struct iphdr*)Buffer;
+    struct iphdr *ip = (struct iphdr*)Buffer;
 	// Verificando o tipo de pacote recebido
-    switch (iph->protocol) 
+    switch (ip->protocol) 
     {
         case 6:  //TCP 
             ++(*num_tcp);
@@ -272,7 +226,10 @@ void Processar(unsigned char* Buffer , int Tamanho , int Tipo, int *num_tcp, int
     
 }  
 
-void MostrarIP(int n1, int n2, int n3);
+void MostrarIP(int n1, int n2, int n3)
+{
+
+}
 void MostrarUDP(int n1, int n2, int n3, int n4)
 {
 
@@ -282,18 +239,18 @@ void MostrarUDP(int n1, int n2, int n3, int n4)
     printf("   - UDP Length       : %d\n" ,n3);
     printf("   - UDP Checksum     : %d\n" ,n4);
 }
-void MostrarDado(int n1, char* m, char* m2, char* m3)
+void MostrarDado(char n1, char* m, char* m2, char* m3)
 {
     printf("\nDados do pacote \n");
-    printf(" - Tipo      : %d\n",n1);
+    printf(" - Tipo      : %c\n",n1);
     printf(" - Matricula : %s\n",m);
     printf(" - Tamanho   : %s\n",m2);
     printf(" - Nome      : %s\n",m3);
     printf("\n **************************************************** \n ");
 }
-void MostrarDado2(int n1, char* m){
+void MostrarDado2(char n1, char* m){
     printf("\nDados do pacote \n");
-    printf(" - Tipo      : %d\n",n1);
+    printf(" - Tipo      : %c\n",n1);
     printf(" - Matricula : %s\n",m);
     printf("\n **************************************************** \n ");
 }

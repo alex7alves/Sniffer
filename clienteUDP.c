@@ -17,15 +17,15 @@
 #include <time.h>
 
 struct tipo_1 {
-    int tipo;
-    char matricula[9];
-    char tamanho[3];
-    char nome[41];
+    char tipo;
+    char matricula[8];
+    char tamanho[2];
+    char nome[50];
 };
 
 struct tipo_2 {
-    int tipo;
-    char matricula[9];
+    char tipo;
+    char matricula[8];
 };
 
 int main( )
@@ -42,34 +42,25 @@ int main( )
     struct tipo_2 mensagem2;
 
     // Preenchendo mensagem do tipo 1
-    //strcpy(mensagem.tipo, "1");
-    mensagem.tipo = 1;
-    printf(" mensagem tipo %d\n",mensagem.tipo);
-    strcpy(mensagem.matricula, "12345678");
-    strcpy(mensagem.tamanho, "10");
-    strcpy(mensagem.nome, " Alan Ribeiro");
+    mensagem.tipo ='1';
+    strcpy(mensagem.matricula, "1234567");
+    strcpy(mensagem.tamanho, "7\0");
+    strcpy(mensagem.nome, "Alan Ribeiro");
 
 
-printf(" matricula %s\n",mensagem.matricula);
-printf(" tamanho %s\n",mensagem.tamanho);
-printf(" nome %s\n",mensagem.nome);
-    // preenchendo mensagem do tipo 2
-   // strcpy(mensagem2.tipo, "2");
-    mensagem2.tipo =2;
-    strcpy(mensagem2.matricula, "90345612");
+    mensagem2.tipo ='2';
+    strcpy(mensagem2.matricula, "9034561");
 
     unsigned short porta = 1234;
     
-    sockfd  = socket(AF_INET, SOCK_DGRAM,0);  // criacao do socket
+    sockfd  = socket(AF_INET, SOCK_DGRAM,0);  
     
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = inet_addr("127.0.0.1");  // localhost
-    //address.sin_addr.s_addr = inet_addr("10.13.96.16"); // euler
-    // address.sin_addr.s_addr = inet_addr("10.13.127.255"); // broadcast
     address.sin_port = htons(porta);
     
     len = sizeof(address);
-    printf("O cliente8 vai começar a enviar os dados \n");
+    printf("O cliente vai começar a enviar os dados \n");
     for(int i=0;i<4;i++)
     {
         printf("Enviando %d \n", i);
